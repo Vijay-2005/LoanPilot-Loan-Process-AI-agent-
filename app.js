@@ -1044,7 +1044,7 @@ function fetchLatestPipelineResult() {
         fetch('https://loanpilot-backend.onrender.com/api/loan-result')
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('No pipeline results available');
+                    throw new Error(`HTTP error! status: ${response.status} - Backend not available`);
                 }
                 return response.json();
             })
@@ -1060,7 +1060,8 @@ function fetchLatestPipelineResult() {
                 }
             })
             .catch(error => {
-                pipelineResultContainer.innerHTML = `<div class="error-message">${error.message}</div>`;
+                console.error('Fetch latest result error:', error);
+                pipelineResultContainer.innerHTML = `<div class="error-message">Failed to connect to backend: ${error.message}</div>`;
             });
     }
 }
@@ -1077,7 +1078,12 @@ function runPipeline() {
             },
             body: JSON.stringify({})  // Empty body will use default loan data
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     displayPipelineResult(data.result, pipelineResultContainer);
@@ -1099,8 +1105,9 @@ function runPipeline() {
                 }
             })
             .catch(error => {
-                pipelineResultContainer.innerHTML = `<div class="error-message">${error.message}</div>`;
-                showToast('Pipeline execution failed', 'error');
+                console.error('Pipeline execution error:', error);
+                pipelineResultContainer.innerHTML = `<div class="error-message">Failed to connect to backend: ${error.message}</div>`;
+                showToast('Pipeline execution failed - Backend not available', 'error');
             });
     }
 }
@@ -1129,7 +1136,12 @@ function runPipelineWithCustomData() {
             },
             body: JSON.stringify(loanData)
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     displayPipelineResult(data.result, fullPipelineResultContainer);
@@ -1149,8 +1161,9 @@ function runPipelineWithCustomData() {
                 }
             })
             .catch(error => {
-                fullPipelineResultContainer.innerHTML = `<div class="error-message">${error.message}</div>`;
-                showToast('Pipeline execution failed', 'error');
+                console.error('Pipeline execution error:', error);
+                fullPipelineResultContainer.innerHTML = `<div class="error-message">Failed to connect to backend: ${error.message}</div>`;
+                showToast('Pipeline execution failed - Backend not available', 'error');
             });
     }
 }

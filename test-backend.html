@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Test</title>
+</head>
+<body>
+    <h1>Backend Connectivity Test</h1>
+    <button onclick="testBackend()">Test Backend</button>
+    <div id="result"></div>
+
+    <script>
+        async function testBackend() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                // Test the health endpoint
+                const healthResponse = await fetch('https://loanpilot-backend.onrender.com/health');
+                console.log('Health response:', healthResponse);
+                
+                if (healthResponse.ok) {
+                    const healthData = await healthResponse.json();
+                    resultDiv.innerHTML += `<p>✅ Health check passed: ${JSON.stringify(healthData)}</p>`;
+                } else {
+                    resultDiv.innerHTML += `<p>❌ Health check failed: ${healthResponse.status} ${healthResponse.statusText}</p>`;
+                }
+                
+                // Test the root endpoint
+                const rootResponse = await fetch('https://loanpilot-backend.onrender.com/');
+                console.log('Root response:', rootResponse);
+                
+                if (rootResponse.ok) {
+                    const rootData = await rootResponse.json();
+                    resultDiv.innerHTML += `<p>✅ Root endpoint works: ${JSON.stringify(rootData)}</p>`;
+                } else {
+                    resultDiv.innerHTML += `<p>❌ Root endpoint failed: ${rootResponse.status} ${rootResponse.statusText}</p>`;
+                }
+                
+                // Test the API endpoint
+                const apiResponse = await fetch('https://loanpilot-backend.onrender.com/api/loan-result');
+                console.log('API response:', apiResponse);
+                
+                if (apiResponse.ok) {
+                    const apiData = await apiResponse.json();
+                    resultDiv.innerHTML += `<p>✅ API endpoint works: ${JSON.stringify(apiData)}</p>`;
+                } else {
+                    resultDiv.innerHTML += `<p>❌ API endpoint failed: ${apiResponse.status} ${apiResponse.statusText}</p>`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML += `<p>❌ Error: ${error.message}</p>`;
+                console.error('Error testing backend:', error);
+            }
+        }
+    </script>
+</body>
+</html> 
