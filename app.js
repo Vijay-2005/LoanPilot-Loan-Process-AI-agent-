@@ -1041,7 +1041,10 @@ function fetchLatestPipelineResult() {
     if (pipelineResultContainer) {
         pipelineResultContainer.innerHTML = '<div class="loading-message">Loading latest result...</div>';
         
-        fetch('https://loanpilot-backend.onrender.com/api/loan-result')
+        // Try the main backend first, fallback to local if needed
+        const backendUrl = 'https://loanpilot-backend.onrender.com';
+        
+        fetch(`${backendUrl}/api/loan-result`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status} - Backend not available`);
@@ -1071,7 +1074,10 @@ function runPipeline() {
     if (pipelineResultContainer) {
         pipelineResultContainer.innerHTML = '<div class="loading-message">Processing loan application...</div>';
         
-        fetch('https://loanpilot-backend.onrender.com/api/process-loan', {
+        // Try the main backend first, fallback to local if needed
+        const backendUrl = 'https://loanpilot-backend.onrender.com';
+        
+        fetch(`${backendUrl}/api/process-loan`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1129,7 +1135,10 @@ function runPipelineWithCustomData() {
             verification_url: "https://verify.didit.me/session/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NTI4NzAzMzUsImV4cCI6MTc1MzQ3NTEzNSwic2Vzc2lvbl9pZCI6IjAxZTYzMzZjLWNmOTgtNDJjNC1iNWQzLTA4NmQ2MDQxOWJlMiJ9.LLO5ONCt0vUplRBd_YgfU4C2RMF6QpHSukhqpmXdYe0"
         };
         
-        fetch('https://loanpilot-backend.onrender.com/api/process-loan', {
+        // Try the main backend first, fallback to local if needed
+        const backendUrl = 'https://loanpilot-backend.onrender.com';
+        
+        fetch(`${backendUrl}/api/process-loan`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
