@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Loan Underwriting Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-page">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>LoanPilot</h1>
+                <p></p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" id="username" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" class="form-control" required>
+                </div>
+                <div class="mfa-section">
+                    <label class="form-label">Multi-Factor Authentication</label>
+                    <div class="mfa-options">
+                        <button type="button" class="btn btn--outline mfa-btn" data-mfa="sms">SMS Code</button>
+                        <button type="button" class="btn btn--outline mfa-btn" data-mfa="email">Email Code</button>
+                        <button type="button" class="btn btn--outline mfa-btn" data-mfa="biometric">Biometric</button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn--primary btn--full-width">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="dashboard hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button id="sidebarToggle" class="btn btn--outline sidebar-toggle">☰</button>
+                <h1 class="header-title">Loan Underwriting Dashboard</h1>
+            </div>
+            <div class="header-right">
+                <button id="themeToggle" class="btn btn--outline theme-toggle">🌙</button>
+                <div class="notifications">
+                    <button class="btn btn--outline notification-btn">🔔</button>
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar-container">
+                        <div class="user-avatar-circle">SM</div>
+                        <div class="user-status-indicator"></div>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">Sarah Mitchell</span>
+                        <span class="user-role">Senior Loan Officer</span>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="btn btn--outline">Logout</button>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-content">
+                <div class="nav-items">
+                    <button class="nav-item active" data-view="dashboard">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-label">Dashboard</span>
+                    </button>
+                    <button class="nav-item" data-view="applications">
+                        <span class="nav-icon">📋</span>
+                        <span class="nav-label">Applications</span>
+                    </button>
+                    <button class="nav-item" data-view="analytics">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-label">Analytics</span>
+                    </button>
+                    <button class="nav-item" data-view="pipeline">
+                        <span class="nav-icon">🔄</span>
+                        <span class="nav-label">Pipeline</span>
+                    </button>
+                    <button class="nav-item" data-view="settings">
+                        <span class="nav-icon">⚙️</span>
+                        <span class="nav-label">Settings</span>
+                    </button>
+                    <button class="nav-item" data-view="help">
+                        <span class="nav-icon">❓</span>
+                        <span class="nav-label">Help</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Overview -->
+            <div id="dashboardView" class="view active">
+                <div class="view-header">
+                    <h2>Dashboard Overview</h2>
+                    <div class="view-actions">
+                        <button class="btn btn--primary">Refresh Data</button>
+                    </div>
+                </div>
+                
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon">📊</div>
+                        <div class="kpi-content">
+                            <h3>Total Applications</h3>
+                            <div class="kpi-value">127</div>
+                            <div class="kpi-change positive">+8.3%</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">✅</div>
+                        <div class="kpi-content">
+                            <h3>Approval Rate</h3>
+                            <div class="kpi-value">68%</div>
+                            <div class="kpi-change positive">+2.1%</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">💹</div>
+                        <div class="kpi-content">
+                            <h3>Portfolio Health</h3>
+                            <div class="kpi-value">92%</div>
+                            <div class="kpi-change positive">+1.2%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pipeline Results Card -->
+                <div class="card">
+                    <div class="card__header">
+                        <h3>Latest Pipeline Result</h3>
+                        <button class="btn btn--outline btn--sm" id="runPipelineBtn">Run Pipeline</button>
+                    </div>
+                    <div class="card__body">
+                        <div id="pipelineResultContainer">
+                            <div class="loading-message">No pipeline results available. Click "Run Pipeline" to process the default loan.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Applications -->
+                <div class="card">
+                    <div class="card__header">
+                        <h3>Recent Applications</h3>
+                        <button class="btn btn--outline btn--sm" onclick="showView('applications')">View All</button>
+                    </div>
+                    <div class="card__body">
+                        <div class="applications-table">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Application ID</th>
+                                        <th>Applicant</th>
+                                        <th>Loan Type</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentApplicationsTable">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Applications View -->
+            <div id="applicationsView" class="view">
+                <div class="view-header">
+                    <h2>Loan Applications</h2>
+                    <div class="view-actions">
+                        <button class="btn btn--outline">Export</button>
+                        <button class="btn btn--primary">New Application</button>
+                    </div>
+                </div>
+                
+                <!-- Filters -->
+                <div class="filters-section">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search applications...">
+                    </div>
+                    <div class="filter-controls">
+                        <select id="statusFilter" class="form-control">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="in_review">In Review</option>
+                            <option value="approved">Approved</option>
+                            <option value="denied">Denied</option>
+                        </select>
+                        <select id="priorityFilter" class="form-control">
+                            <option value="">All Priority</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                        <select id="loanTypeFilter" class="form-control">
+                            <option value="">All Types</option>
+                            <option value="Mortgage">Mortgage</option>
+                            <option value="Auto Loan">Auto Loan</option>
+                            <option value="Business Loan">Business Loan</option>
+                            <option value="Personal Loan">Personal Loan</option>
+                            <option value="Home Equity">Home Equity</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Applications Table -->
+                <div class="card">
+                    <div class="card__body">
+                        <div class="applications-table">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" id="selectAll"></th>
+                                        <th class="sortable" data-sort="id">Application ID</th>
+                                        <th class="sortable" data-sort="applicantName">Applicant</th>
+                                        <th class="sortable" data-sort="loanType">Loan Type</th>
+                                        <th class="sortable" data-sort="loanAmount">Amount</th>
+                                        <th class="sortable" data-sort="creditScore">Credit Score</th>
+                                        <th class="sortable" data-sort="status">Status</th>
+                                        <th class="sortable" data-sort="priority">Priority</th>
+                                        <th class="sortable" data-sort="applicationDate">Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="applicationsTable">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics View -->
+            <div id="analyticsView" class="view">
+                <div class="view-header">
+                    <h2>Analytics Dashboard</h2>
+                    <div class="view-actions">
+                        <select class="form-control">
+                            <option>Last 30 Days</option>
+                            <option>Last 90 Days</option>
+                            <option>Last Year</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Charts Grid -->
+                <div class="analytics-grid">
+                    <div class="chart-container">
+                        <div class="card">
+                            <div class="card__header">
+                                <h3>Monthly Applications</h3>
+                            </div>
+                            <div class="card__body">
+                                <canvas id="monthlyApplicationsChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="card">
+                            <div class="card__header">
+                                <h3>Approval Rates</h3>
+                            </div>
+                            <div class="card__body">
+                                <canvas id="approvalRatesChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="card">
+                            <div class="card__header">
+                                <h3>Risk Distribution</h3>
+                            </div>
+                            <div class="card__body">
+                                <canvas id="riskDistributionChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pipeline View -->
+            <div id="pipelineView" class="view">
+                <div class="view-header">
+                    <h2>Loan Processing Pipeline</h2>
+                    <div class="view-actions">
+                        <button class="btn btn--primary" id="runPipelineFullBtn">Run Pipeline</button>
+                    </div>
+                </div>
+                
+                <!-- Loan Input Form -->
+                <div class="card">
+                    <div class="card__header">
+                        <h3>Loan Input Data</h3>
+                    </div>
+                    <div class="card__body">
+                        <form id="loanInputForm" class="form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="name" class="form-label">Applicant Name</label>
+                                    <input type="text" id="name" class="form-control" value="Jane Doe">
+                                </div>
+                                <div class="form-group">
+                                    <label for="age" class="form-label">Age</label>
+                                    <input type="number" id="age" class="form-control" value="35">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="income" class="form-label">Annual Income</label>
+                                    <input type="number" id="income" class="form-control" value="450000">
+                                </div>
+                                <div class="form-group">
+                                    <label for="loan_amount" class="form-label">Loan Amount</label>
+                                    <input type="number" id="loan_amount" class="form-control" value="450000">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="credit_score" class="form-label">Credit Score</label>
+                                    <input type="number" id="credit_score" class="form-control" value="720">
+                                </div>
+                                <div class="form-group">
+                                    <label for="existing_liabilities" class="form-label">Existing Liabilities</label>
+                                    <input type="number" id="existing_liabilities" class="form-control" value="15000">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="purpose" class="form-label">Loan Purpose</label>
+                                    <input type="text" id="purpose" class="form-control" value="Home Renovation">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Pipeline Results -->
+                <div class="card">
+                    <div class="card__header">
+                        <h3>Pipeline Results</h3>
+                    </div>
+                    <div class="card__body">
+                        <div id="fullPipelineResultContainer">
+                            <div class="loading-message">Run the pipeline to see results</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="settingsView" class="view">
+                <div class="view-header">
+                    <h2>Settings</h2>
+                </div>
+                <div class="settings-content">
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>User Preferences</h3>
+                        </div>
+                        <div class="card__body">
+                            <div class="form-group">
+                                <label class="form-label">Theme</label>
+                                <select class="form-control">
+                                    <option value="light">Light</option>
+                                    <option value="dark">Dark</option>
+                                    <option value="auto">Auto</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Auto Refresh (seconds)</label>
+                                <input type="number" class="form-control" value="30">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" checked> Email Notifications
+                                </label>
+                            </div>
+                            <button class="btn btn--primary">Save Settings</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help View -->
+            <div id="helpView" class="view">
+                <div class="view-header">
+                    <h2>Help & Documentation</h2>
+                </div>
+                <div class="help-content">
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>User Guide</h3>
+                        </div>
+                        <div class="card__body">
+                            <p>Welcome to the Bank Loan Underwriting Dashboard. This system helps you manage and process loan applications efficiently.</p>
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>View and filter loan applications</li>
+                                <li>Review agent assessments</li>
+                                <li>Make approval decisions</li>
+                                <li>Monitor analytics and performance</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Application Detail Modal -->
+    <div id="applicationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Application Details</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Application details will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
