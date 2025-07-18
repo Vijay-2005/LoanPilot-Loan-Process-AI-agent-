@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Didit Integration Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .verification-url { word-break: break-all; color: #007bff; }
+    </style>
+</head>
+<body>
+    <h1>Didit Integration Test</h1>
+    
+    <div class="test-section info">
+        <h2>Test Loan Application with Didit Verification</h2>
+        <p>This test demonstrates the integration with Didit service for KYC and identity verification.</p>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Data</h3>
+        <button onclick="testDiditIntegration()">Test Didit Integration</button>
+        <button onclick="testVerificationCallback()">Test Verification Callback</button>
+        <button onclick="testVerificationStatus()">Test Verification Status</button>
+        
+        <div id="testResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Sample Loan Application</h3>
+        <pre id="sampleData">
+{
+    "name": "John Doe",
+    "age": 35,
+    "income": 75000,
+    "loan_amount": 250000,
+    "credit_score": 720,
+    "existing_liabilities": 15000,
+    "purpose": "Home Purchase"
+}
+        </pre>
+    </div>
+
+    <script>
+        async function testDiditIntegration() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<h4>Testing Didit Integration...</h4>';
+            
+            const testData = {
+                name: "John Doe",
+                age: 35,
+                income: 75000,
+                loan_amount: 250000,
+                credit_score: 720,
+                existing_liabilities: 15000,
+                purpose: "Home Purchase"
+            };
+            
+            try {
+                const response = await fetch('https://loanpilot-backend.onrender.com/api/process-loan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const verificationUrl = result.result.fields?.verification_url;
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Didit Integration Successful!</h4>
+                            <p><strong>Verification URL:</strong></p>
+                            <p class="verification-url">${verificationUrl || 'No URL generated'}</p>
+                            <p><strong>Full Response:</strong></p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Didit Integration Failed</h4>
+                            <p>${result.error || 'Unknown error'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Network Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testVerificationCallback() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<h4>Testing Verification Callback...</h4>';
+            
+            const mockCallbackData = {
+                session_id: "test-session-123",
+                status: "completed",
+                verification_data: {
+                    identity_verified: true,
+                    documents_verified: true,
+                    kyc_completed: true
+                },
+                timestamp: new Date().toISOString()
+            };
+            
+            try {
+                const response = await fetch('https://loanpilot-backend.onrender.com/api/verification-callback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(mockCallbackData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Verification Callback Successful!</h4>
+                            <p><strong>Session ID:</strong> ${mockCallbackData.session_id}</p>
+                            <p><strong>Status:</strong> ${mockCallbackData.status}</p>
+                            <p><strong>Response:</strong></p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Verification Callback Failed</h4>
+                            <p>${result.error || 'Unknown error'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Network Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testVerificationStatus() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<h4>Testing Verification Status...</h4>';
+            
+            const sessionId = "test-session-123";
+            
+            try {
+                const response = await fetch(`https://loanpilot-backend.onrender.com/api/verification-status/${sessionId}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Verification Status Retrieved!</h4>
+                            <p><strong>Session ID:</strong> ${result.result.session_id}</p>
+                            <p><strong>Status:</strong> ${result.result.status}</p>
+                            <p><strong>Verification Data:</strong></p>
+                            <pre>${JSON.stringify(result.result.verification_data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Verification Status Failed</h4>
+                            <p>${result.error || 'Unknown error'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Network Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Skip Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 5px; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: #000; }
+    </style>
+</head>
+<body>
+    <h1>Verification Skip Functionality Test</h1>
+    
+    <div class="test-section info">
+        <h3>Test Description</h3>
+        <p>This test demonstrates the "Verify Later" functionality where an agent can skip document verification and approve a user to continue with loan processing.</p>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 1: Trigger Verification Popup</h3>
+        <button onclick="triggerVerificationPopup()">Show Verification Popup</button>
+        <div id="popup-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 2: Skip Verification</h3>
+        <button onclick="testSkipVerification()">Test Skip Verification</button>
+        <div id="skip-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 3: Process Loan with Skipped Verification</h3>
+        <button onclick="testProcessWithSkippedVerification()">Process Loan (Skip Verification)</button>
+        <div id="process-result"></div>
+    </div>
+
+    <!-- Verification Modal -->
+    <div id="verificationModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeVerificationModal()">&times;</span>
+            <h2>Identity Verification Required</h2>
+            <p>Please complete your identity verification to proceed with your loan application.</p>
+            <p>Click the button below to verify your identity:</p>
+            <div style="margin-top: 20px;">
+                <a href="https://verify.didit.me/session/test" target="_blank" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin-right: 10px;">Verify Identity</a>
+                <button onclick="skipVerification()" style="background-color: #555; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Verify Later</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const backendUrl = 'https://loanpilot-backend.onrender.com';
+        
+        function triggerVerificationPopup() {
+            const resultDiv = document.getElementById('popup-result');
+            resultDiv.innerHTML = 'Showing verification popup...';
+            
+            // Show the modal
+            document.getElementById('verificationModal').style.display = 'block';
+            
+            resultDiv.innerHTML = `
+                <div class="success">
+                    <h4>✅ Verification Popup Triggered</h4>
+                    <p>The verification popup is now displayed. You can either:</p>
+                    <ul>
+                        <li>Click "Verify Identity" to go through verification</li>
+                        <li>Click "Verify Later" to skip verification and approve the user</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function closeVerificationModal() {
+            document.getElementById('verificationModal').style.display = 'none';
+        }
+
+        function skipVerification() {
+            const resultDiv = document.getElementById('skip-result');
+            resultDiv.innerHTML = 'Processing skip verification...';
+            
+            // Close the modal
+            closeVerificationModal();
+            
+            // Create loan data with skipped verification
+            const loanData = {
+                name: "John Doe",
+                age: 30,
+                income: 75000,
+                loan_amount: 250000,
+                credit_score: 720,
+                existing_liabilities: 15000,
+                purpose: "Home Purchase",
+                verification_url: "https://verify.didit.me/session/test",
+                verification_skipped: true,
+                document_verification: {
+                    identity: "skipped",
+                    income: "skipped",
+                    bank_statements: "skipped"
+                }
+            };
+            
+            // Process the loan with skipped verification
+            fetch(`${backendUrl}/api/process-loan`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(loanData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Verification Skipped Successfully</h4>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Decision:</strong> ${data.result?.decision || 'Processed'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Skip Verification Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            });
+        }
+
+        function testProcessWithSkippedVerification() {
+            const resultDiv = document.getElementById('process-result');
+            resultDiv.innerHTML = 'Processing loan with skipped verification...';
+            
+            // Create loan data with skipped verification
+            const loanData = {
+                name: "Jane Smith",
+                age: 35,
+                income: 85000,
+                loan_amount: 300000,
+                credit_score: 680,
+                existing_liabilities: 20000,
+                purpose: "Home Renovation",
+                verification_url: "https://verify.didit.me/session/test",
+                verification_skipped: true,
+                document_verification: {
+                    identity: "skipped",
+                    income: "skipped",
+                    bank_statements: "skipped"
+                }
+            };
+            
+            // Process the loan
+            fetch(`${backendUrl}/api/process-loan`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(loanData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Loan Processed with Skipped Verification</h4>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Decision:</strong> ${data.result?.decision || 'Processed'}</p>
+                        <p><strong>Reasoning:</strong> ${data.result?.reasoning ? data.result.reasoning.substring(0, 200) + '...' : 'No reasoning provided'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Loan Processing Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            });
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('verificationModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html> 

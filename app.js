@@ -1100,6 +1100,9 @@ function runPipeline() {
                     // Update dashboard with the latest result
                     updateDashboardWithLatestResult(data.result);
                     
+                    // Store the current loan data for verification handling
+                    window.currentLoanData = data.result.fields || {};
+                    
                     // Check if there's a verification URL and show popup
                     if (data.result.fields && data.result.fields.verification_url) {
                         showVerificationPopup(data.result.fields.verification_url);
@@ -1160,6 +1163,9 @@ function runPipelineWithCustomData() {
                     
                     // Update dashboard with the latest result
                     updateDashboardWithLatestResult(data.result);
+                    
+                    // Store the current loan data for verification handling
+                    window.currentLoanData = loanData;
                     
                     // Show verification popup
                     showVerificationPopup(loanData.verification_url);
@@ -1549,10 +1555,13 @@ function showVerificationPopup(verificationUrl) {
             </div>
             <div class="modal-body">
                 <p>Please complete your identity verification to proceed with your loan application.</p>
-                <p>Click the button below to verify your identity:</p>
+                <p>You can either verify your identity now or choose to verify later (auto-approved for document verification):</p>
                 <div class="verification-actions">
-                    <a href="${verificationUrl}" target="_blank" class="btn btn-primary">Verify Identity</a>
-                    <button class="btn btn-secondary" onclick="closeVerificationModal()">Verify Later</button>
+                    <a href="${verificationUrl}" target="_blank" class="btn btn-primary">Verify Identity Now</a>
+                    <button class="btn btn-secondary" onclick="skipVerification()">Verify Later (Auto-Approved)</button>
+                </div>
+                <div style="margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; font-size: 12px; color: #666;">
+                    <strong>Note:</strong> Choosing "Verify Later" will auto-approve your document verification and allow loan processing to continue.
                 </div>
             </div>
         </div>
@@ -1653,4 +1662,141 @@ function closeVerificationModal() {
     if (modal) {
         modal.remove();
     }
+}
+
+// Add function to skip verification and approve user
+function skipVerification() {
+    // Close the verification modal
+    closeVerificationModal();
+    
+    // Show a confirmation message
+    showToast('Verification skipped. User auto-approved for document verification.', 'success');
+    
+    // Update the current loan data to mark verification as auto-approved
+    if (window.currentLoanData) {
+        window.currentLoanData.verification_skipped = true;
+        window.currentLoanData.verification_auto_approved = true;
+        window.currentLoanData.document_verification = {
+            identity: "auto_approved",
+            income: "auto_approved", 
+            bank_statements: "auto_approved",
+            documents: "auto_approved"
+        };
+        
+        // Create auto-approved verification session
+        createAutoApprovedVerificationSession(window.currentLoanData);
+        
+        // Continue with the loan processing
+        continueLoanProcessing(window.currentLoanData);
+    }
+}
+
+// Add function to create auto-approved verification session
+async function createAutoApprovedVerificationSession(loanData) {
+    try {
+        const backendUrl = 'https://loanpilot-backend.onrender.com';
+        
+        // Create auto-approved session via backend
+        const response = await fetch(`${backendUrl}/api/create-verification-session`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                user_data: {
+                    name: loanData.name || 'Applicant',
+                    email: loanData.email || '',
+                    phone: loanData.phone || '',
+                    loan_amount: loanData.loan_amount || 0,
+                    purpose: loanData.purpose || 'Loan Application',
+                    income: loanData.income || 0,
+                    credit_score: loanData.credit_score || 0
+                },
+                skip_verification: true  // This triggers auto-approval
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Auto-approved verification session created:', data);
+            
+            // Update loan data with auto-approved verification URL
+            if (data.verification_url) {
+                window.currentLoanData.verification_url = data.verification_url;
+                window.currentLoanData.verification_session_id = data.session_id;
+                window.currentLoanData.verification_status = 'auto_approved';
+            }
+        } else {
+            console.error('Failed to create auto-approved verification session');
+        }
+    } catch (error) {
+        console.error('Error creating auto-approved verification session:', error);
+    }
+}
+
+// Add function to check verification status
+async function checkVerificationStatus(sessionId) {
+    try {
+        const response = await fetch(`https://loanpilot-backend.onrender.com/api/verification-status/${sessionId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            return data.result;
+        } else {
+            throw new Error(data.error || 'Failed to check verification status');
+        }
+    } catch (error) {
+        console.error('Error checking verification status:', error);
+        return null;
+    }
+}
+
+// Add function to handle verification completion
+function handleVerificationComplete(verificationData) {
+    if (window.currentLoanData) {
+        // Update verification status based on Didit response
+        window.currentLoanData.document_verification = {
+            identity: verificationData.identity_verified ? "verified" : "pending",
+            income: verificationData.documents_verified ? "verified" : "pending",
+            address: verificationData.kyc_completed ? "verified" : "pending"
+        };
+        
+        // Continue with loan processing
+        continueLoanProcessing(window.currentLoanData);
+    }
+}
+
+// Function to continue loan processing after verification decision
+function continueLoanProcessing(loanData) {
+    // Show loading message
+    showToast('Processing loan application...', 'info');
+    
+    // Send the updated loan data to the backend
+    fetch('https://loanpilot-backend.onrender.com/api/process-loan', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(loanData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(result => {
+        // Display the result
+        const container = document.getElementById('pipelineResultContainer');
+        displayPipelineResult(result, container);
+        
+        // Add to applications list
+        addProcessedLoanToApplications(result, loanData);
+        
+        showToast('Loan processing completed successfully!', 'success');
+    })
+    .catch(error => {
+        console.error('Error processing loan:', error);
+        showToast('Error processing loan application. Please try again.', 'error');
+    });
 }

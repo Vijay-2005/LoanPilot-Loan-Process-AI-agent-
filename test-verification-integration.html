@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Didit Verification Integration Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .test-section h3 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .result-box {
+            background: #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .verification-url {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        
+        .status-pending {
+            color: #856404;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .status-completed {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .api-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .api-info h4 {
+            color: #495057;
+            margin-top: 0;
+        }
+        
+        .api-key {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Didit Verification Integration Test</h1>
+        
+        <div class="api-info">
+            <h4>🔑 API Configuration</h4>
+            <p><strong>API Key:</strong> <span class="api-key">K64_8MFhh5dSE8bGgxGODPy8d-LGQ2QXSsg-sQYKNlc</span></p>
+            <p><strong>Webhook Secret:</strong> <span class="api-key">WaAzcc3QkGwcF0mhxuo51QiNvC9uM7ClxuvZKe88yJQ</span></p>
+            <p><strong>Base URL:</strong> <span class="api-key">https://api.didit.me</span></p>
+            <p><strong>Webhook URL:</strong> <span class="api-key">https://loanpilot-backend.onrender.com/api/verification-callback</span></p>
+        </div>
+        
+        <div class="test-section">
+            <h3>📋 Test Loan Application</h3>
+            <form id="loanForm">
+                <div class="form-group">
+                    <label for="name">Full Name:</label>
+                    <input type="text" id="name" value="John Smith" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" value="john.smith@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone:</label>
+                    <input type="tel" id="phone" value="+1234567890" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loanAmount">Loan Amount:</label>
+                    <input type="number" id="loanAmount" value="250000" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="purpose">Loan Purpose:</label>
+                    <select id="purpose" required>
+                        <option value="Home Purchase">Home Purchase</option>
+                        <option value="Home Refinance">Home Refinance</option>
+                        <option value="Business Loan">Business Loan</option>
+                        <option value="Personal Loan">Personal Loan</option>
+                        <option value="Auto Loan">Auto Loan</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="income">Annual Income:</label>
+                    <input type="number" id="income" value="75000" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="creditScore">Credit Score:</label>
+                    <input type="number" id="creditScore" value="720" min="300" max="850" required>
+                </div>
+                
+                <button type="button" class="btn btn-success" onclick="createVerificationSession()">
+                    🔐 Create Verification Session
+                </button>
+                
+                <button type="button" class="btn btn-warning" onclick="createVerificationSessionLater()">
+                    ⏰ Verify Later (Auto-Approved)
+                </button>
+            </form>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔗 Verification Session</h3>
+            <div id="verificationResult" style="display: none;">
+                <div class="verification-url">
+                    <strong>Verification URL:</strong><br>
+                    <span id="verificationUrl"></span>
+                </div>
+                
+                <div class="result-box">
+                    <strong>Session ID:</strong> <span id="sessionId"></span><br>
+                    <strong>Status:</strong> <span id="sessionStatus"></span><br>
+                    <strong>Created:</strong> <span id="sessionCreated"></span>
+                </div>
+                
+                <button class="btn btn-warning" onclick="checkSessionStatus()">
+                    🔄 Check Status
+                </button>
+                
+                <button class="btn" onclick="openVerificationUrl()">
+                    🌐 Open Verification Page
+                </button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 Webhook Testing</h3>
+            <button class="btn" onclick="testWebhookSignature()">
+                🔐 Test Webhook Signature
+            </button>
+            
+            <div id="webhookResult" style="display: none;">
+                <div class="result-box">
+                    <strong>Webhook Payload:</strong><br>
+                    <pre id="webhookPayload"></pre>
+                    <strong>Signature:</strong> <span id="webhookSignature"></span><br>
+                    <strong>Verification:</strong> <span id="webhookVerification"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🤖 Agent Integration Test</h3>
+            <button class="btn btn-success" onclick="testAgentIntegration()">
+                🚀 Test Complete Agent Flow
+            </button>
+            
+            <div id="agentResult" style="display: none;">
+                <div class="result-box">
+                    <h4>Agent Processing Results:</h4>
+                    <div id="agentResults"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSessionId = null;
+        
+        function createVerificationSession() {
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                loan_amount: parseInt(document.getElementById('loanAmount').value),
+                purpose: document.getElementById('purpose').value,
+                income: parseInt(document.getElementById('income').value),
+                credit_score: parseInt(document.getElementById('creditScore').value)
+            };
+            
+            // Simulate API call
+            console.log('Creating verification session for:', formData);
+            
+            // Mock response
+            const mockResponse = {
+                session_id: 'session_' + Date.now(),
+                verification_url: 'https://verify.didit.me/session/' + Date.now(),
+                status: 'pending',
+                created_at: new Date().toISOString()
+            };
+            
+            displayVerificationResult(mockResponse);
+        }
+        
+        function createVerificationSessionLater() {
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                loan_amount: parseInt(document.getElementById('loanAmount').value),
+                purpose: document.getElementById('purpose').value,
+                income: parseInt(document.getElementById('income').value),
+                credit_score: parseInt(document.getElementById('creditScore').value)
+            };
+            
+            // Simulate API call with auto-approval
+            console.log('Creating auto-approved verification session for:', formData);
+            
+            // Mock response for auto-approved session
+            const mockResponse = {
+                session_id: 'auto_approved_' + Date.now(),
+                verification_url: 'https://verify.didit.me/session/auto_approved_' + Date.now(),
+                status: 'completed',
+                created_at: new Date().toISOString(),
+                auto_approved: true,
+                approval_reason: 'User chose to verify later'
+            };
+            
+            displayVerificationResult(mockResponse, true);
+        }
+        
+        function displayVerificationResult(response, isAutoApproved = false) {
+            currentSessionId = response.session_id;
+            
+            document.getElementById('verificationUrl').textContent = response.verification_url;
+            document.getElementById('sessionId').textContent = response.session_id;
+            document.getElementById('sessionStatus').textContent = response.status;
+            document.getElementById('sessionCreated').textContent = new Date(response.created_at).toLocaleString();
+            
+            // Add auto-approval indicator
+            if (isAutoApproved || response.auto_approved) {
+                const statusElement = document.getElementById('sessionStatus');
+                statusElement.textContent = response.status + ' (Auto-Approved)';
+                statusElement.className = 'status-completed';
+                
+                // Add approval reason
+                const resultBox = document.querySelector('#verificationResult .result-box');
+                const approvalInfo = document.createElement('div');
+                approvalInfo.innerHTML = `
+                    <strong>Auto-Approval Reason:</strong> ${response.approval_reason || 'User chose to verify later'}<br>
+                    <strong>Document Verification:</strong> ✅ Approved<br>
+                    <strong>Identity Verification:</strong> ✅ Approved
+                `;
+                approvalInfo.style.marginTop = '10px';
+                approvalInfo.style.padding = '10px';
+                approvalInfo.style.background = '#d4edda';
+                approvalInfo.style.borderRadius = '5px';
+                approvalInfo.style.border = '1px solid #c3e6cb';
+                resultBox.appendChild(approvalInfo);
+            }
+            
+            document.getElementById('verificationResult').style.display = 'block';
+        }
+        
+        function checkSessionStatus() {
+            if (!currentSessionId) {
+                alert('No session to check');
+                return;
+            }
+            
+            // Simulate status check
+            const statuses = ['pending', 'in_progress', 'completed'];
+            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+            
+            const statusElement = document.getElementById('sessionStatus');
+            statusElement.textContent = randomStatus;
+            
+            if (randomStatus === 'completed') {
+                statusElement.className = 'status-completed';
+            } else {
+                statusElement.className = 'status-pending';
+            }
+        }
+        
+        function openVerificationUrl() {
+            const url = document.getElementById('verificationUrl').textContent;
+            window.open(url, '_blank');
+        }
+        
+        function testWebhookSignature() {
+            const webhookData = {
+                session_id: currentSessionId || 'test-session-123',
+                status: 'completed',
+                event_type: 'verification.completed',
+                timestamp: new Date().toISOString(),
+                verification_data: {
+                    identity_verified: true,
+                    document_verified: true,
+                    face_match: true,
+                    liveness_check: true,
+                    overall_score: 0.95
+                }
+            };
+            
+            const payload = JSON.stringify(webhookData);
+            const signature = 'sha256=' + btoa(payload).slice(0, 20) + '...'; // Mock signature
+            
+            document.getElementById('webhookPayload').textContent = payload;
+            document.getElementById('webhookSignature').textContent = signature;
+            document.getElementById('webhookVerification').textContent = '✅ PASS';
+            
+            document.getElementById('webhookResult').style.display = 'block';
+        }
+        
+        function testAgentIntegration() {
+            const agentResults = [
+                {
+                    agent: 'Loan Officer',
+                    assessment: 'Approved',
+                    confidence: '85%',
+                    notes: 'Strong application with good credit score and stable income'
+                },
+                {
+                    agent: 'Credit Analyst',
+                    assessment: 'Low Risk',
+                    confidence: '92%',
+                    notes: 'Excellent credit history and debt-to-income ratio'
+                },
+                {
+                    agent: 'Risk Manager',
+                    assessment: 'Final Approval',
+                    confidence: '88%',
+                    notes: 'All verification checks passed, loan approved'
+                }
+            ];
+            
+            let resultsHtml = '';
+            agentResults.forEach(result => {
+                resultsHtml += `
+                    <div style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        <strong>${result.agent}:</strong> ${result.assessment} (${result.confidence})<br>
+                        <em>${result.notes}</em>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('agentResults').innerHTML = resultsHtml;
+            document.getElementById('agentResult').style.display = 'block';
+        }
+        
+        // Initialize with sample data
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Didit Verification Integration Test Loaded');
+            console.log('API Key:', 'K64_8MFhh5dSE8bGgxGODPy8d-LGQ2QXSsg-sQYKNlc');
+            console.log('Webhook Secret:', 'WaAzcc3QkGwcF0mhxuo51QiNvC9uM7ClxuvZKe88yJQ');
+        });
+    </script>
+</body>
+</html> 

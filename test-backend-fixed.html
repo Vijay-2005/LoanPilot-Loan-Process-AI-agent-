@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Test - Fixed</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Backend Connectivity Test - Fixed Version</h1>
+    
+    <div class="test-section info">
+        <h3>Test Status</h3>
+        <div id="status">Ready to test...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 1: Health Check</h3>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <div id="health-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 2: Root Endpoint</h3>
+        <button onclick="testRoot()">Test Root Endpoint</button>
+        <div id="root-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 3: Process Loan (Empty)</h3>
+        <button onclick="testProcessLoan()">Test Process Loan</button>
+        <div id="process-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 4: Process Loan (With Data)</h3>
+        <button onclick="testProcessLoanWithData()">Test Process Loan with Data</button>
+        <div id="process-data-result"></div>
+    </div>
+
+    <script>
+        const backendUrl = 'https://loanpilot-backend.onrender.com';
+        
+        function updateStatus(message, isError = false) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = message;
+            statusDiv.parentElement.className = `test-section ${isError ? 'error' : 'success'}`;
+        }
+
+        async function testHealth() {
+            const resultDiv = document.getElementById('health-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch(`${backendUrl}/health`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Health Check Passed</h4>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Health Check Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testRoot() {
+            const resultDiv = document.getElementById('root-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch(`${backendUrl}/`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Root Endpoint Passed</h4>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Root Endpoint Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testProcessLoan() {
+            const resultDiv = document.getElementById('process-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch(`${backendUrl}/api/process-loan`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Process Loan Passed</h4>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Process Loan Failed</h4>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <pre>${errorText}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Process Loan Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testProcessLoanWithData() {
+            const resultDiv = document.getElementById('process-data-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            const testData = {
+                name: "John Doe",
+                age: 30,
+                income: 75000,
+                loan_amount: 250000,
+                credit_score: 720,
+                existing_liabilities: 15000,
+                purpose: "Home Purchase",
+                verification_url: "https://verify.didit.me/session/test"
+            };
+            
+            try {
+                const response = await fetch(`${backendUrl}/api/process-loan`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Process Loan with Data Passed</h4>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Process Loan with Data Failed</h4>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <pre>${errorText}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Process Loan with Data Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run health check on page load
+        window.onload = function() {
+            updateStatus('Page loaded. Click buttons to test endpoints.');
+        };
+    </script>
+</body>
+</html> 
