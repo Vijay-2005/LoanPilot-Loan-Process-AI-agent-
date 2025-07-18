@@ -1041,7 +1041,7 @@ function fetchLatestPipelineResult() {
     if (pipelineResultContainer) {
         pipelineResultContainer.innerHTML = '<div class="loading-message">Loading latest result...</div>';
         
-        fetch('/api/get-loan-result')
+        fetch('https://loanpilot-backend.onrender.com/api/loan-result')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('No pipeline results available');
@@ -1070,7 +1070,7 @@ function runPipeline() {
     if (pipelineResultContainer) {
         pipelineResultContainer.innerHTML = '<div class="loading-message">Processing loan application...</div>';
         
-        fetch('/api/run-pipeline', {
+        fetch('https://loanpilot-backend.onrender.com/api/process-loan', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1122,7 +1122,7 @@ function runPipelineWithCustomData() {
             verification_url: "https://verify.didit.me/session/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NTI4NzAzMzUsImV4cCI6MTc1MzQ3NTEzNSwic2Vzc2lvbl9pZCI6IjAxZTYzMzZjLWNmOTgtNDJjNC1iNWQzLTA4NmQ2MDQxOWJlMiJ9.LLO5ONCt0vUplRBd_YgfU4C2RMF6QpHSukhqpmXdYe0"
         };
         
-        fetch('/api/run-pipeline', {
+        fetch('https://loanpilot-backend.onrender.com/api/process-loan', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
