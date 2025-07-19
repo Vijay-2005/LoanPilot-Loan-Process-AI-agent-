@@ -1,9 +1,20 @@
 {
   "version": 2,
   "builds": [
+    { "src": "*.html", "use": "@vercel/static" },
+    { "src": "*.css", "use": "@vercel/static" },
+    { "src": "*.js", "use": "@vercel/static" },
     { "src": "api/server.js", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "/api/server.js" }
-  ]
+    { "src": "/api/(.*)", "dest": "/api/server.js" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ],
+  "env": {
+    "BACKEND_URL": "https://loan-checker-backend.onrender.com",
+    "LOAN_PARSER_PORT": "8002",
+    "CREDIT_ANALYZER_PORT": "8003",
+    "RISK_ASSESSOR_PORT": "8004", 
+    "PIPELINE_PORT": "8005"
+  }
 } 

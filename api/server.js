@@ -14,11 +14,25 @@ const MIME_TYPES = {
   '.svg': 'image/svg+xml'
 };
 
+// Get the base URL from environment variables or use localhost as fallback
+const BASE_API_URL = process.env.BACKEND_URL || 'http://127.0.0.1';
+const LOAN_PARSER_PORT = process.env.LOAN_PARSER_PORT || '8002';
+const CREDIT_ANALYZER_PORT = process.env.CREDIT_ANALYZER_PORT || '8003';
+const RISK_ASSESSOR_PORT = process.env.RISK_ASSESSOR_PORT || '8004';
+const PIPELINE_PORT = process.env.PIPELINE_PORT || '8005';
+
 // MCP server URLs
-const LOAN_PARSER_URL = 'http://127.0.0.1:8002/process';
-const CREDIT_ANALYZER_URL = 'http://127.0.0.1:8003/process';
-const RISK_ASSESSOR_URL = 'http://127.0.0.1:8004/process';
-const PIPELINE_API_URL = 'http://127.0.0.1:8005/api';
+const LOAN_PARSER_URL = `${BASE_API_URL}:${LOAN_PARSER_PORT}/process`;
+const CREDIT_ANALYZER_URL = `${BASE_API_URL}:${CREDIT_ANALYZER_PORT}/process`;
+const RISK_ASSESSOR_URL = `${BASE_API_URL}:${RISK_ASSESSOR_PORT}/process`;
+const PIPELINE_API_URL = `${BASE_API_URL}:${PIPELINE_PORT}/api`;
+
+// Log the URLs for debugging
+console.log('Using backend URLs:');
+console.log(`- Loan Parser: ${LOAN_PARSER_URL}`);
+console.log(`- Credit Analyzer: ${CREDIT_ANALYZER_URL}`);
+console.log(`- Risk Assessor: ${RISK_ASSESSOR_URL}`);
+console.log(`- Pipeline API: ${PIPELINE_API_URL}`);
 
 module.exports = (req, res) => {
   const parsedUrl = url.parse(req.url, true);
@@ -103,6 +117,7 @@ module.exports = (req, res) => {
             result: finalResult
           }));
         } catch (error) {
+          console.error('Error processing loan:', error.message);
           res.writeHead(500, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ 
             success: false, 

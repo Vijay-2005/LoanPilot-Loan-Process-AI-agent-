@@ -1035,16 +1035,38 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Configure backend URLs
+const BACKEND_URLS = {
+    production: 'https://loan-checker-backend.onrender.com',
+    local: 'http://localhost:3000',
+    fallback: 'https://loanpilot-backend.onrender.com'
+};
+
+// Get the appropriate backend URL based on environment
+function getBackendUrl() {
+    // Try to detect the current environment
+    const hostname = window.location.hostname;
+    
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        console.log('Using local backend URL:', BACKEND_URLS.local);
+        return BACKEND_URLS.local;
+    } else {
+        // If deployed to Netlify or other production environment
+        console.log('Using production backend URL:', BACKEND_URLS.production);
+        return BACKEND_URLS.production;
+    }
+}
+
 // Add these functions for pipeline functionality
 function fetchLatestPipelineResult() {
     const pipelineResultContainer = document.getElementById('pipelineResultContainer');
     if (pipelineResultContainer) {
         pipelineResultContainer.innerHTML = '<div class="loading-message">Loading latest result...</div>';
         
-        // Try the main backend first, fallback to local if needed
-        const backendUrl = 'https://loanpilot-backend.onrender.com';
+        // Get the backend URL with fallback options
+        const backendUrl = getBackendUrl();
         
-        fetch(`${backendUrl}/api/loan-result`)
+        fetch(`${backendUrl}/api/get-loan-result`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status} - Backend not available`);
@@ -1074,8 +1096,10 @@ function runPipeline() {
     if (pipelineResultContainer) {
         pipelineResultContainer.innerHTML = '<div class="loading-message">Processing loan application...</div>';
         
-        // Try the main backend first, fallback to local if needed
-        const backendUrl = 'https://loanpilot-backend.onrender.com';
+        // Get the backend URL with fallback options
+        const backendUrl = getBackendUrl();
+        
+        console.log(`Connecting to backend at: ${backendUrl}/api/process-loan`);
         
         fetch(`${backendUrl}/api/process-loan`, {
             method: 'POST',
@@ -1138,8 +1162,8 @@ function runPipelineWithCustomData() {
             verification_url: "https://verify.didit.me/session/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NTI4NzAzMzUsImV4cCI6MTc1MzQ3NTEzNSwic2Vzc2lvbl9pZCI6IjAxZTYzMzZjLWNmOTgtNDJjNC1iNWQzLTA4NmQ2MDQxOWJlMiJ9.LLO5ONCt0vUplRBd_YgfU4C2RMF6QpHSukhqpmXdYe0"
         };
         
-        // Try the main backend first, fallback to local if needed
-        const backendUrl = 'https://loanpilot-backend.onrender.com';
+        // Get the backend URL with fallback options
+        const backendUrl = getBackendUrl();
         
         fetch(`${backendUrl}/api/process-loan`, {
             method: 'POST',
@@ -1697,7 +1721,7 @@ function skipVerification() {
 // Add function to create auto-approved verification session
 async function createAutoApprovedVerificationSession(loanData) {
     try {
-        const backendUrl = 'https://loanpilot-backend.onrender.com';
+        const backendUrl = getBackendUrl();
         
         // Create auto-approved session via backend
         const response = await fetch(`${backendUrl}/api/create-verification-session`, {
@@ -1740,7 +1764,8 @@ async function createAutoApprovedVerificationSession(loanData) {
 // Add function to check verification status
 async function checkVerificationStatus(sessionId) {
     try {
-        const response = await fetch(`https://loanpilot-backend.onrender.com/api/verification-status/${sessionId}`);
+        const backendUrl = getBackendUrl();
+        const response = await fetch(`${backendUrl}/api/verification-status/${sessionId}`);
         const data = await response.json();
         
         if (data.success) {
@@ -1775,7 +1800,8 @@ function continueLoanProcessing(loanData) {
     showToast('Processing loan application...', 'info');
     
     // Send the updated loan data to the backend
-    fetch('https://loanpilot-backend.onrender.com/api/process-loan', {
+    const backendUrl = getBackendUrl();
+    fetch(`${backendUrl}/api/process-loan`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
