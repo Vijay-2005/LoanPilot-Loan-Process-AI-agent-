@@ -1187,8 +1187,8 @@ function addProcessedLoanToApplications(result, loanData = null) {
     // Extract decision from the result
     let decision = "pending";
     let name = loanData ? loanData.name : "Default Applicant";
-    let loanAmount = loanData ? loanData.loan_amount : 450000;
-    let loanPurpose = loanData ? loanData.purpose : "Home Renovation";
+    let loanAmount = loanData ? loanData.loan_amount : 45000;
+    let loanPurpose = loanData ? loanData.purpose : "iphone";
     let creditScore = loanData ? loanData.credit_score : 720;
     
     // Try to extract the decision from the result
@@ -1247,7 +1247,7 @@ function addProcessedLoanToApplications(result, loanData = null) {
         priority: priority,
         riskLevel: riskLevel,
         income: loanData ? loanData.income : 450000,
-        debtToIncomeRatio: ((loanData ? loanData.existing_liabilities : 15000) / (loanData ? loanData.income : 450000)).toFixed(2),
+        debtToIncomeRatio: ((loanData ? loanData.existing_liabilities : 1500) / (loanData ? loanData.income : 450000)).toFixed(2),
         employmentStatus: 'Full-time',
         loanPurpose: loanPurpose,
         loanTerm: 15,
@@ -1319,12 +1319,15 @@ function displayPipelineResult(result, container) {
         }
     }
     
-    // Extract loan details from reasoning if available
-    let creditScore = 720;
-    let loanAmount = 450000;
-    let income = 450000;
-    let purpose = "Home Renovation";
-    let debtToIncomeRatio = 1.03;
+    // Get the actual loan data from the current window state
+    let creditScore = window.currentLoanData ? window.currentLoanData.credit_score : 720;
+    let loanAmount = window.currentLoanData ? window.currentLoanData.loan_amount : 45000;
+    let income = window.currentLoanData ? window.currentLoanData.income : 450000;
+    let purpose = window.currentLoanData ? window.currentLoanData.purpose : "iphone";
+    let existingLiabilities = window.currentLoanData ? window.currentLoanData.existing_liabilities : 1500;
+    
+    // Calculate actual debt-to-income ratio
+    let debtToIncomeRatio = income > 0 ? (existingLiabilities / income) : 0;
     
     if (result.reasoning) {
         const reasoningText = result.reasoning;
